@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastrear Envío - ESTAFETA EXPRESS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #E30613;
+        }
+
+        .nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav a:hover {
+            color: #E30613;
+        }
+
+        .nav .admin-btn {
+            background-color: #E30613;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+
+        .nav .admin-btn:hover {
+            background-color: #b80410;
+        }
+
+        /* Search Section */
+        .search-section {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .search-section h1 {
+            color: #E30613;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+
+        .search-section p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .search-form input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .search-form button {
+            padding: 12px 30px;
+            background-color: #E30613;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .search-form button:hover {
+            background-color: #b80410;
+        }
+
+        /* Etiqueta */
+        .etiqueta {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 2px solid #E30613;
+            display: none;
+        }
+
+        .etiqueta.show {
+            display: block;
+        }
+
+        .etiqueta-header {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #E30613;
+            padding-bottom: 20px;
+            align-items: center;
+        }
+
+        .etiqueta-logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #E30613;
+        }
+
+        .etiqueta-guia {
+            text-align: center;
+        }
+
+        .etiqueta-guia-label {
+            background-color: #FFD700;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .etiqueta-guia-numero {
+            background-color: #FFD700;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 24px;
+            color: #000;
+        }
+
+        .etiqueta-unidad {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .etiqueta-barcode {
+            text-align: center;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            letter-spacing: 2px;
+            color: #000;
+        }
+
+        .etiqueta-datos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .etiqueta-seccion {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .etiqueta-seccion h3 {
+            color: #E30613;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .etiqueta-seccion p {
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 5px 0;
+        }
+
+        .etiqueta-footer {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+            border-top: 2px solid #E30613;
+            padding-top: 20px;
+            text-align: center;
+        }
+
+        .etiqueta-footer-item h4 {
+            color: #E30613;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .etiqueta-footer-item p {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Timeline */
+        .timeline {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .timeline.show {
+            display: block;
+        }
+
+        .timeline h2 {
+            color: #E30613;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 50px;
+            width: 2px;
+            height: 100%;
+            background-color: #ddd;
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .timeline-dot {
+            width: 32px;
+            height: 32px;
+            background-color: #E30613;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 20px;
+            flex-shrink: 0;
+            z-index: 1;
+        }
+
+        .timeline-dot.completed {
+            background-color: #4CAF50;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-content h4 {
+            color: #E30613;
+            margin-bottom: 5px;
+        }
+
+        .timeline-content p {
+            color: #666;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+
+        .timeline-content .fecha {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        /* Print */
+        .print-btn {
+            background-color: #E30613;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .print-btn:hover {
+            background-color: #b80410;
+        }
+
+        @media print {
+            .header, .search-section, .nav, .print-btn {
+                display: none;
+            }
+
+            .etiqueta {
+                box-shadow: none;
+                border: 1px solid #000;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .etiqueta-header {
+                grid-template-columns: 1fr;
+            }
+
+            .etiqueta-datos {
+                grid-template-columns: 1fr;
+            }
+
+            .etiqueta-footer {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="container">
+        <div class="header">
+            <div class="logo">🚚 ESTAFETA EXPRESS</div>
+            <div class="nav">
+                <a href="index.html">Inicio</a>
+                <a href="rastrear.html">Rastrear</a>
+                <a href="index.html#servicios">Servicios</a>
+                <a href="index.html#contacto">Contacto</a>
+                <a href="index.html?admin=true" class="admin-btn">👨‍💼 Administrador</a>
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <h1>Rastrear tu Envío</h1>
+            <p>Ingresa tu número de guía para conocer el estado de tu paquete</p>
+            <div class="search-form">
+                <input type="text" id="numeroGuia" placeholder="EST-YYYYMMDD-XXXXX" autocomplete="off">
+                <button onclick="rastrear()">Rastrear</button>
+            </div>
+        </div>
+
+        <!-- Etiqueta -->
+        <div id="etiqueta" class="etiqueta">
+            <div class="etiqueta-header">
+                <div class="etiqueta-logo">ESTAFETA®</div>
+                <div class="etiqueta-guia">
+                    <div class="etiqueta-guia-label">GUÍA:</div>
+                    <div class="etiqueta-guia-numero" id="etiqueta-guia">EST-00000000-00000</div>
+                </div>
+                <div class="etiqueta-unidad">UNIDAD<br>1/1</div>
+            </div>
+
+            <div class="etiqueta-barcode">
+                ║║║║ ║ ║║║ ║║║║ ║║ ║ ║║║║ ║║║ ║ ║║ ║║║║ ║║
+            </div>
+
+            <div class="etiqueta-datos">
+                <div class="etiqueta-seccion">
+                    <h3>De: Datos de Origen</h3>
+                    <p id="etiqueta-remitente"></p>
+                    <p id="etiqueta-ciudad-origen"></p>
+                    <p id="etiqueta-telefono-remitente"></p>
+                </div>
+                <div class="etiqueta-seccion">
+                    <h3>Para: Datos de Destino</h3>
+                    <p id="etiqueta-destinatario"></p>
+                    <p id="etiqueta-ciudad-destino"></p>
+                    <p id="etiqueta-telefono-destinatario"></p>
+                </div>
+            </div>
+
+            <div class="etiqueta-datos">
+                <div class="etiqueta-seccion">
+                    <h3>Peso & Volumen</h3>
+                    <p id="etiqueta-peso"></p>
+                    <p id="etiqueta-volumen"></p>
+                </div>
+                <div class="etiqueta-seccion">
+                    <h3>Observaciones</h3>
+                    <p id="etiqueta-observaciones"></p>
+                </div>
+            </div>
+
+            <div class="etiqueta-footer">
+                <div class="etiqueta-footer-item">
+                    <h4>Origen</h4>
+                    <p id="etiqueta-origen-footer"></p>
+                </div>
+                <div class="etiqueta-footer-item">
+                    <h4>QR</h4>
+                    <p style="font-size: 24px;">⬜</p>
+                </div>
+                <div class="etiqueta-footer-item">
+                    <h4>Destino</h4>
+                    <p id="etiqueta-destino-footer"></p>
+                </div>
+                <div class="etiqueta-footer-item">
+                    <h4>Zona Hub</h4>
+                    <p id="etiqueta-zona-hub"></p>
+                </div>
+            </div>
+
+            <button class="print-btn" onclick="window.print()">🖨️ Imprimir Etiqueta</button>
+        </div>
+
+        <!-- Timeline -->
+        <div id="timeline" class="timeline">
+            <h2>Historial de Movimientos</h2>
+            <div id="timelineContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Obtener envíos del localStorage
+        let envios = JSON.parse(localStorage.getItem('envios')) || [];
+
+        function rastrear() {
+            const numeroGuia = document.getElementById('numeroGuia').value.trim();
+
+            if (!numeroGuia) {
+                alert('Por favor ingresa un número de guía');
+                return;
+            }
+
+            const envio = envios.find(e => e.numero_guia === numeroGuia);
+
+            if (!envio) {
+                alert('Envío no encontrado. Verifica el número de guía.');
+                return;
+            }
+
+            // Mostrar etiqueta
+            document.getElementById('etiqueta-guia').textContent = envio.numero_guia;
+            document.getElementById('etiqueta-remitente').textContent = envio.remitente;
+            document.getElementById('etiqueta-ciudad-origen').textContent = envio.ciudad_origen;
+            document.getElementById('etiqueta-telefono-remitente').textContent = 'Tel: ' + envio.telefono_remitente;
+            document.getElementById('etiqueta-destinatario').textContent = envio.destinatario;
+            document.getElementById('etiqueta-ciudad-destino').textContent = envio.ciudad_destino;
+            document.getElementById('etiqueta-telefono-destinatario').textContent = 'Tel: ' + envio.telefono_destinatario;
+            document.getElementById('etiqueta-peso').textContent = `Peso: ${envio.peso} kg`;
+            document.getElementById('etiqueta-volumen').textContent = `Vol: ${envio.volumen} cm³`;
+            document.getElementById('etiqueta-observaciones').textContent = envio.observaciones || 'Sin observaciones';
+            document.getElementById('etiqueta-origen-footer').textContent = envio.ciudad_origen;
+            document.getElementById('etiqueta-destino-footer').textContent = envio.ciudad_destino;
+            document.getElementById('etiqueta-zona-hub').textContent = Math.floor(Math.random() * 999) + 1;
+
+            document.getElementById('etiqueta').classList.add('show');
+
+            // Mostrar timeline
+            let timelineHTML = '';
+            envio.historial.forEach((movimiento, index) => {
+                const isCompleted = index < envio.historial.length;
+                timelineHTML += `
+                    <div class="timeline-item">
+                        <div class="timeline-dot ${isCompleted ? 'completed' : ''}">✓</div>
+                        <div class="timeline-content">
+                            <h4>${movimiento.estado}</h4>
+                            <p>${movimiento.descripcion}</p>
+                            <p class="fecha">${movimiento.fecha}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('timelineContent').innerHTML = timelineHTML;
+            document.getElementById('timeline').classList.add('show');
+
+            // Scroll a la etiqueta
+            document.getElementById('etiqueta').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Permitir Enter para rastrear
+        document.getElementById('numeroGuia').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                rastrear();
+            }
+        });
+
+        // Cargar datos de prueba si no existen
+        if (envios.length === 0) {
+            envios = [
+                {
+                    numero_guia: "EST-20260501-00001",
+                    remitente: "Carlos López",
+                    destinatario: "María García",
+                    telefono_remitente: "+52 5555551234",
+                    telefono_destinatario: "+52 3331234567",
+                    ciudad_origen: "Ciudad de México",
+                    ciudad_destino: "Guadalajara",
+                    peso: 2.5,
+                    volumen: 1500,
+                    observaciones: "Frágil",
+                    estado: "En tránsito",
+                    historial: [
+                        { fecha: "2026-05-01 08:00", estado: "Guía creada", descripcion: "Envío registrado" },
+                        { fecha: "2026-05-01 14:30", estado: "En recolección", descripcion: "Paquete recolectado" },
+                        { fecha: "2026-05-02 06:00", estado: "En tránsito", descripcion: "En ruta" }
+                    ]
+                }
+            ];
+            localStorage.setItem('envios', JSON.stringify(envios));
+        }
+    </script>
+</body>
+</html>

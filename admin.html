@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador - ESTAFETA EXPRESS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: #E30613;
+            color: white;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            margin-bottom: 30px;
+            font-size: 18px;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 12px 15px;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        .sidebar .logout {
+            margin-top: 30px;
+            background-color: rgba(255,255,255,0.2);
+            border: 1px solid white;
+        }
+
+        .sidebar .logout:hover {
+            background-color: rgba(255,255,255,0.3);
+        }
+
+        /* Main Content */
+        .main {
+            margin-left: 250px;
+            flex: 1;
+            padding: 30px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #E30613;
+        }
+
+        .admin-info {
+            text-align: right;
+        }
+
+        .admin-info p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Forms */
+        .form-group {
+            margin: 15px 0;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #E30613;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #b80410;
+        }
+
+        .btn-secondary {
+            background-color: #666;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #555;
+        }
+
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #da190b;
+        }
+
+        /* Table */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .table th {
+            background-color: #E30613;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .table .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .table .actions button {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* Messages */
+        .success {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .success.show {
+            display: block;
+        }
+
+        .error {
+            background-color: #f44336;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #E30613;
+            padding-bottom: 15px;
+        }
+
+        .modal-header h2 {
+            color: #E30613;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: #E30613;
+            font-size: 32px;
+            margin: 10px 0;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .table {
+                font-size: 12px;
+            }
+
+            .table td, .table th {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>🚚 ESTAFETA EXPRESS</h2>
+            <h3 style="font-size: 14px; margin-bottom: 20px;">Panel Admin</h3>
+            <a onclick="showSection('dashboard')" class="nav-link active">📊 Dashboard</a>
+            <a onclick="showSection('crear-envio')" class="nav-link">➕ Crear Envío</a>
+            <a onclick="showSection('listar-envios')" class="nav-link">📋 Listar Envíos</a>
+            <a onclick="showSection('buscar-envio')" class="nav-link">🔍 Buscar Envío</a>
+            <a onclick="logout()" class="logout">🚪 Cerrar Sesión</a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main">
+            <div class="header">
+                <h1>Panel de Administración</h1>
+                <div class="admin-info">
+                    <p id="adminEmail"></p>
+                    <p id="adminTime"></p>
+                </div>
+            </div>
+
+            <!-- Dashboard -->
+            <div id="dashboard" class="section active">
+                <h2 style="color: #E30613; margin-bottom: 20px;">Dashboard</h2>
+                <div class="stats">
+                    <div class="stat-card">
+                        <p>Total de Envíos</p>
+                        <h3 id="totalEnvios">0</h3>
+                    </div>
+                    <div class="stat-card">
+                        <p>Entregados</p>
+                        <h3 id="enviosEntregados" style="color: #4CAF50;">0</h3>
+                    </div>
+                    <div class="stat-card">
+                        <p>En Tránsito</p>
+                        <h3 id="enviosEnTransito" style="color: #FF9800;">0</h3>
+                    </div>
+                    <div class="stat-card">
+                        <p>Pendientes</p>
+                        <h3 id="enviosPendientes" style="color: #2196F3;">0</h3>
+                    </div>
+                </div>
+
+                <h3 style="color: #E30613; margin: 30px 0 20px 0;">Últimos Envíos</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Guía</th>
+                            <th>Remitente</th>
+                            <th>Destinatario</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ultimosEnvios"></tbody>
+                </table>
+            </div>
+
+            <!-- Crear Envío -->
+            <div id="crear-envio" class="section">
+                <h2 style="color: #E30613; margin-bottom: 20px;">Crear Nuevo Envío</h2>
+                <div id="successMessage" class="success"></div>
+                <div id="errorMessage" class="error"></div>
+
+                <form onsubmit="crearEnvio(event)">
+                    <h3 style="color: #E30613; margin: 20px 0 15px 0;">Datos del Remitente</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nombre Remitente</label>
+                            <input type="text" id="remitenteNombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Teléfono Remitente</label>
+                            <input type="tel" id="remitenteTel" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Ciudad Origen</label>
+                        <input type="text" id="ciudadOrigen" placeholder="Ej: Ciudad de México, Guadalajara, Monterrey..." required>
+                    </div>
+
+                    <h3 style="color: #E30613; margin: 20px 0 15px 0;">Datos del Destinatario</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nombre Destinatario</label>
+                            <input type="text" id="destinatarioNombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Teléfono Destinatario</label>
+                            <input type="tel" id="destinatarioTel" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Dirección Destinatario</label>
+                        <input type="text" id="destinatarioDireccion" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Ciudad Destino</label>
+                        <input type="text" id="ciudadDestino" placeholder="Ej: Ciudad de México, Guadalajara, Monterrey..." required>
+                    </div>
+
+                    <h3 style="color: #E30613; margin: 20px 0 15px 0;">Detalles del Envío</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Peso (kg)</label>
+                            <input type="number" step="0.1" id="peso" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Volumen (cm³)</label>
+                            <input type="number" id="volumen">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Observaciones</label>
+                        <textarea id="observaciones" placeholder="Notas adicionales sobre el envío"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Crear Envío</button>
+                </form>
+            </div>
+
+            <!-- Listar Envíos -->
+            <div id="listar-envios" class="section">
+                <h2 style="color: #E30613; margin-bottom: 20px;">Listar Todos los Envíos</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Guía</th>
+                            <th>Remitente</th>
+                            <th>Destinatario</th>
+                            <th>Origen → Destino</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="todosEnvios"></tbody>
+                </table>
+            </div>
+
+            <!-- Buscar Envío -->
+            <div id="buscar-envio" class="section">
+                <h2 style="color: #E30613; margin-bottom: 20px;">Buscar Envío</h2>
+                <div class="form-group">
+                    <label>Número de Guía</label>
+                    <input type="text" id="buscarGuia" placeholder="EST-YYYYMMDD-XXXXX">
+                </div>
+                <button class="btn btn-primary" onclick="buscarEnvio()">Buscar</button>
+
+                <div id="resultadoBusqueda" style="margin-top: 30px; display: none;">
+                    <div style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #E30613;">
+                        <div class="form-row">
+                            <div>
+                                <p><strong>Guía:</strong> <span id="busqueda-guia"></span></p>
+                                <p><strong>Remitente:</strong> <span id="busqueda-remitente"></span></p>
+                                <p><strong>Destinatario:</strong> <span id="busqueda-destinatario"></span></p>
+                            </div>
+                            <div>
+                                <p><strong>Origen:</strong> <span id="busqueda-origen"></span></p>
+                                <p><strong>Destino:</strong> <span id="busqueda-destino"></span></p>
+                                <p><strong>Estado:</strong> <span id="busqueda-estado" style="color: #E30613; font-weight: bold;"></span></p>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <button class="btn btn-secondary" onclick="editarEnvio()">✏️ Editar</button>
+                            <button class="btn btn-danger" onclick="eliminarEnvio()">🗑️ Eliminar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Estado -->
+    <div id="editarModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Actualizar Estado</h2>
+                <button class="close-btn" onclick="cerrarModal()">×</button>
+            </div>
+            <form onsubmit="actualizarEstado(event)">
+                <div class="form-group">
+                    <label>Nuevo Estado</label>
+                    <input type="text" id="nuevoEstado" placeholder="Ej: En tránsito, Entregado, En recoleción..." required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción del Movimiento</label>
+                    <textarea id="descripcionMovimiento" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Actualizar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Datos - Cargar desde API del servidor
+        let envios = [];
+        
+        // Cargar envíos desde la API al iniciar
+        function cargarEnviosDelServidor() {
+            fetch('/api/envios')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.envios && Array.isArray(data.envios)) {
+                        envios = data.envios;
+                        console.log('✅ Envíos cargados del servidor:', envios.length);
+                    }
+                })
+                .catch(error => console.error('Error cargando envíos:', error));
+        }
+        
+        // Cargar al iniciar
+        cargarEnviosDelServidor();
+        
+        // Datos de prueba (ya no se usan)
+        let datosAntiguos = [
+            {
+                numero_guia: "EST-20260501-00001",
+                remitente: "Carlos López",
+                destinatario: "María García",
+                telefono_remitente: "+52 5555551234",
+                telefono_destinatario: "+52 3331234567",
+                direccion: "Calle Principal 123",
+                ciudad_origen: "Ciudad de México",
+                ciudad_destino: "Guadalajara",
+                estado: "En tránsito",
+                peso: 2.5,
+                volumen: 1500,
+                observaciones: "Frágil",
+                fecha_creacion: "2026-05-01",
+                fecha_entrega_estimada: "2026-05-03",
+                historial: [
+                    { fecha: "2026-05-01 08:00", estado: "Guía creada", descripcion: "Envío registrado" },
+                    { fecha: "2026-05-01 14:30", estado: "En recolección", descripcion: "Paquete recolectado" },
+                    { fecha: "2026-05-02 06:00", estado: "En tránsito", descripcion: "En ruta" }
+                ]
+            },
+            {
+                numero_guia: "EST-20260501-00002",
+                remitente: "Juan Martínez",
+                destinatario: "Roberto Sánchez",
+                telefono_remitente: "+52 8144445678",
+                telefono_destinatario: "+52 9988776655",
+                direccion: "Avenida Secundaria 456",
+                ciudad_origen: "Monterrey",
+                ciudad_destino: "Cancún",
+                estado: "En centro logístico",
+                peso: 1.2,
+                volumen: 800,
+                observaciones: "Urgente",
+                fecha_creacion: "2026-05-01",
+                fecha_entrega_estimada: "2026-05-04",
+                historial: [
+                    { fecha: "2026-05-01 09:00", estado: "Guía creada", descripcion: "Envío registrado" },
+                    { fecha: "2026-05-01 15:00", estado: "En recolección", descripcion: "Paquete recolectado" },
+                    { fecha: "2026-05-02 08:00", estado: "En centro logístico", descripcion: "En centro" }
+                ]
+            },
+            {
+                numero_guia: "EST-20260501-00003",
+                remitente: "Ana Rodríguez",
+                destinatario: "Pedro Gómez",
+                telefono_remitente: "+52 2291234567",
+                telefono_destinatario: "+52 5559876543",
+                direccion: "Calle Tercera 789",
+                ciudad_origen: "Veracruz",
+                ciudad_destino: "Ciudad de México",
+                estado: "En ruta de entrega",
+                peso: 3.0,
+                volumen: 2000,
+                observaciones: "Mantener fresco",
+                fecha_creacion: "2026-04-30",
+                fecha_entrega_estimada: "2026-05-02",
+                historial: [
+                    { fecha: "2026-04-30 10:00", estado: "Guía creada", descripcion: "Envío registrado" },
+                    { fecha: "2026-04-30 16:00", estado: "En recolección", descripcion: "Paquete recolectado" },
+                    { fecha: "2026-05-01 07:00", estado: "En tránsito", descripcion: "En ruta" },
+                    { fecha: "2026-05-02 08:00", estado: "En centro logístico", descripcion: "En centro" },
+                    { fecha: "2026-05-02 14:00", estado: "En ruta de entrega", descripcion: "Con repartidor" }
+                ]
+            },
+            {
+                numero_guia: "EST-20260501-00004",
+                remitente: "Luis Fernández",
+                destinatario: "Sofía Morales",
+                telefono_remitente: "+52 3331111111",
+                telefono_destinatario: "+52 8144442222",
+                direccion: "Boulevard Principal 321",
+                ciudad_origen: "Guadalajara",
+                ciudad_destino: "Monterrey",
+                estado: "Entregado",
+                peso: 1.8,
+                volumen: 1200,
+                observaciones: "Entregado correctamente",
+                fecha_creacion: "2026-04-28",
+                fecha_entrega_estimada: "2026-05-01",
+                historial: [
+                    { fecha: "2026-04-28 11:00", estado: "Guía creada", descripcion: "Envío registrado" },
+                    { fecha: "2026-04-28 17:00", estado: "En recolección", descripcion: "Paquete recolectado" },
+                    { fecha: "2026-04-29 08:00", estado: "En tránsito", descripcion: "En ruta" },
+                    { fecha: "2026-04-30 09:00", estado: "En centro logístico", descripcion: "En centro" },
+                    { fecha: "2026-05-01 10:00", estado: "En ruta de entrega", descripcion: "Con repartidor" },
+                    { fecha: "2026-05-01 16:30", estado: "Entregado", descripcion: "Entregado al destinatario" }
+                ]
+            },
+            {
+                numero_guia: "EST-20260501-00005",
+                remitente: "Miguel Ángel Torres",
+                destinatario: "Gabriela López",
+                telefono_remitente: "+52 9988883333",
+                telefono_destinatario: "+52 2295554444",
+                direccion: "Calle Cuarta 654",
+                ciudad_origen: "Cancún",
+                ciudad_destino: "Veracruz",
+                estado: "Guía creada",
+                peso: 2.2,
+                volumen: 1400,
+                observaciones: "Nuevo envío",
+                fecha_creacion: "2026-05-08",
+                fecha_entrega_estimada: "2026-05-12",
+                historial: [
+                    { fecha: "2026-05-08 09:00", estado: "Guía creada", descripcion: "Envío registrado" }
+                ]
+            }
+        ];
+
+        let adminActual = JSON.parse(localStorage.getItem('adminActual'));
+        let envioActual = null;
+
+        // Inicializar
+        if (!adminActual) {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('adminEmail').textContent = adminActual.email;
+        actualizarHora();
+        setInterval(actualizarHora, 1000);
+        cargarDashboard();
+
+        // Funciones
+        function actualizarHora() {
+            const ahora = new Date().toLocaleTimeString('es-MX');
+            document.getElementById('adminTime').textContent = ahora;
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (sectionId === 'listar-envios') {
+                cargarTodosEnvios();
+            } else if (sectionId === 'dashboard') {
+                cargarDashboard();
+            }
+        }
+
+        function cargarDashboard() {
+            document.getElementById('totalEnvios').textContent = envios.length;
+            document.getElementById('enviosEntregados').textContent = envios.filter(e => e.estado === 'Entregado').length;
+            document.getElementById('enviosEnTransito').textContent = envios.filter(e => e.estado === 'En tránsito').length;
+            document.getElementById('enviosPendientes').textContent = envios.filter(e => ['Guía creada', 'En recolección', 'En centro logístico', 'En ruta de entrega'].includes(e.estado)).length;
+
+            let html = '';
+            envios.slice(0, 5).forEach(e => {
+                html += `
+                    <tr>
+                        <td>${e.numero_guia}</td>
+                        <td>${e.remitente}</td>
+                        <td>${e.destinatario}</td>
+                        <td>${e.estado}</td>
+                        <td>
+                            <div class="actions">
+                                <button class="btn btn-secondary" onclick="verDetalles('${e.numero_guia}')">👁️</button>
+                                <button class="btn btn-primary" onclick="abrirModalEstado('${e.numero_guia}')">✏️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('ultimosEnvios').innerHTML = html;
+        }
+
+        function cargarTodosEnvios() {
+            let html = '';
+            envios.forEach(e => {
+                html += `
+                    <tr>
+                        <td>${e.numero_guia}</td>
+                        <td>${e.remitente}</td>
+                        <td>${e.destinatario}</td>
+                        <td>${e.ciudad_origen} → ${e.ciudad_destino}</td>
+                        <td>${e.estado}</td>
+                        <td>
+                            <div class="actions">
+                                <button class="btn btn-secondary" onclick="verDetalles('${e.numero_guia}')">👁️</button>
+                                <button class="btn btn-primary" onclick="abrirModalEstado('${e.numero_guia}')">✏️</button>
+                                <button class="btn btn-danger" onclick="eliminarEnvioDirecto('${e.numero_guia}')">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('todosEnvios').innerHTML = html;
+        }
+
+        function crearEnvio(event) {
+            event.preventDefault();
+
+            const nuevoEnvio = {
+                remitente: document.getElementById('remitenteNombre').value,
+                destinatario: document.getElementById('destinatarioNombre').value,
+                telefono_remitente: document.getElementById('remitenteTel').value,
+                telefono_destinatario: document.getElementById('destinatarioTel').value,
+                direccion: document.getElementById('destinatarioDireccion').value,
+                ciudad_origen: document.getElementById('ciudadOrigen').value,
+                ciudad_destino: document.getElementById('ciudadDestino').value,
+                peso: parseFloat(document.getElementById('peso').value),
+                volumen: document.getElementById('volumen').value,
+                observaciones: document.getElementById('observaciones').value
+            };
+
+            // Enviar a la API del servidor
+            fetch('/api/crear-envio', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(nuevoEnvio)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('successMessage').textContent = `✓ Envío creado exitosamente. Guía: ${data.numero_guia}`;
+                    document.getElementById('successMessage').classList.add('show');
+                    
+                    // Recargar envios desde el servidor
+                    setTimeout(() => {
+                        cargarEnviosDelServidor();
+                        cargarTodosEnvios();
+                    }, 300);
+                    
+                    // Abrir PDF automáticamente
+                    setTimeout(() => {
+                        window.open(`/api/pdf/${data.numero_guia}`, '_blank');
+                    }, 500);
+                    
+                    event.target.reset();
+                    cargarDashboard();
+                    setTimeout(() => {
+                        document.getElementById('successMessage').classList.remove('show');
+                    }, 5000);
+                } else {
+                    document.getElementById('errorMessage').textContent = `Error: ${data.error}`;
+                    document.getElementById('errorMessage').classList.add('show');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('errorMessage').textContent = 'Error al crear el envío';
+                document.getElementById('errorMessage').classList.add('show');
+            });
+        }
+
+        function generarGuia() {
+            const fecha = new Date().toISOString().split('T')[0].replace(/-/g, '');
+            const numero = String(envios.length + 1).padStart(5, '0');
+            return `EST-${fecha}-${numero}`;
+        }
+
+        function buscarEnvio() {
+            const guia = document.getElementById('buscarGuia').value;
+            
+            fetch(`/api/envio/${guia}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.envio) {
+                        envioActual = data.envio;
+                        document.getElementById('busqueda-guia').textContent = envioActual.numero_guia;
+                        document.getElementById('busqueda-remitente').textContent = envioActual.remitente;
+                        document.getElementById('busqueda-destinatario').textContent = envioActual.destinatario;
+                        document.getElementById('busqueda-origen').textContent = envioActual.ciudad_origen;
+                        document.getElementById('busqueda-destino').textContent = envioActual.ciudad_destino;
+                        document.getElementById('busqueda-estado').textContent = envioActual.estado;
+                        document.getElementById('resultadoBusqueda').style.display = 'block';
+                    } else {
+                        alert('Envío no encontrado');
+                        document.getElementById('resultadoBusqueda').style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al buscar el envío');
+                });
+        }
+
+        function abrirModalEstado(guia) {
+            envioActual = envios.find(e => e.numero_guia === guia);
+            document.getElementById('editarModal').classList.add('active');
+        }
+
+        function cerrarModal() {
+            document.getElementById('editarModal').classList.remove('active');
+        }
+
+        function actualizarEstado(event) {
+            event.preventDefault();
+
+            if (!envioActual) return;
+
+            const nuevoEstado = document.getElementById('nuevoEstado').value;
+            const descripcion = document.getElementById('descripcionMovimiento').value;
+
+            fetch('/api/actualizar-envio/' + envioActual.numero_guia, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    estado: nuevoEstado,
+                    descripcion: descripcion
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    cargarEnviosDelServidor();
+                    cerrarModal();
+                    alert('Estado actualizado correctamente');
+                    cargarDashboard();
+                    cargarTodosEnvios();
+                } else {
+                    alert('Error: ' + (data.error || 'No se pudo actualizar'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al actualizar el estado');
+            });
+        }
+
+        function verDetalles(guia) {
+            const envio = envios.find(e => e.numero_guia === guia);
+            alert(`Guía: ${envio.numero_guia}\nRemitente: ${envio.remitente}\nDestinatario: ${envio.destinatario}\nEstado: ${envio.estado}`);
+        }
+
+        function eliminarEnvio() {
+            if (confirm('¿Estás seguro de que deseas eliminar este envío?')) {
+                envios = envios.filter(e => e.numero_guia !== envioActual.numero_guia);
+                localStorage.setItem('envios', JSON.stringify(envios));
+                document.getElementById('resultadoBusqueda').style.display = 'none';
+                alert('Envío eliminado');
+            }
+        }
+
+        function eliminarEnvioDirecto(guia) {
+            if (confirm('¿Estás seguro de que deseas eliminar este envío?')) {
+                envios = envios.filter(e => e.numero_guia !== guia);
+                localStorage.setItem('envios', JSON.stringify(envios));
+                cargarTodosEnvios();
+            }
+        }
+
+        function editarEnvio() {
+            alert('Función de edición disponible próximamente');
+        }
+
+        function logout() {
+            localStorage.removeItem('adminActual');
+            window.location.href = 'index.html';
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('editarModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                cerrarModal();
+            }
+        });
+    </script>
+</body>
+</html>

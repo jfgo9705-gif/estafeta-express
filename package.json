@@ -1,0 +1,22 @@
+{
+  "name": "estafeta-logistica",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [],
+  "author": "ESTAFETA EXPRESS",
+  "license": "ISC",
+  "description": "Plataforma profesional de logística ESTAFETA EXPRESS",
+  "dependencies": {
+    "better-sqlite3": "^12.9.0",
+    "bwip-js": "^4.10.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pdfkit": "^0.18.0",
+    "qrcode": "^1.5.4"
+  }
+}
