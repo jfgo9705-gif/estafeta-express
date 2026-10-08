@@ -7,6 +7,28 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const MEXICO_TIME_ZONE = 'America/Mexico_City';
+
+function mexicoDateKey(date = new Date()) {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: MEXICO_TIME_ZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).formatToParts(date).reduce((result, part) => {
+        if (part.type !== 'literal') result[part.type] = part.value;
+        return result;
+    }, {});
+    return `${parts.year}${parts.month}${parts.day}`;
+}
+
+function mexicoDateTime(date = new Date()) {
+    return new Intl.DateTimeFormat('es-MX', {
+        timeZone: MEXICO_TIME_ZONE,
+        dateStyle: 'short',
+        timeStyle: 'medium'
+    }).format(date);
+}
 
 // Middleware
 app.use(cors());
@@ -304,7 +326,7 @@ app.post('/api/crear-envio', (req, res) => {
         } = req.body;
 
         // Generar número de guía
-        const fecha = new Date().toISOString().split('T')[0].replace(/-/g, '');
+        const fecha = mexicoDateKey();
         const countStmt = db.prepare("SELECT COUNT(*) as count FROM envios");
         const countRow = countStmt.get();
         const numero = String((countRow?.count || 0) + 1).padStart(5, '0');
@@ -315,7 +337,7 @@ app.post('/api/crear-envio', (req, res) => {
 
         const historial = JSON.stringify([
             {
-                fecha: new Date().toLocaleString('es-MX'),
+                fecha: mexicoDateTime(),
                 estado: "Guía creada",
                 descripcion: "Envío registrado en el sistema"
             }
@@ -350,7 +372,7 @@ app.post('/api/envios', (req, res) => {
         } = req.body;
 
         // Generar número de guía
-        const fecha = new Date().toISOString().split('T')[0].replace(/-/g, '');
+        const fecha = mexicoDateKey();
         const countStmt = db.prepare("SELECT COUNT(*) as count FROM envios");
         const countRow = countStmt.get();
         const numero = String((countRow?.count || 0) + 1).padStart(5, '0');
@@ -361,7 +383,7 @@ app.post('/api/envios', (req, res) => {
 
         const historial = JSON.stringify([
             {
-                fecha: new Date().toLocaleString('es-MX'),
+                fecha: mexicoDateTime(),
                 estado: "Guía creada",
                 descripcion: "Envío registrado en el sistema"
             }
@@ -401,7 +423,7 @@ app.put('/api/actualizar-envio/:guia', (req, res) => {
 
         const historial = JSON.parse(row.historial || '[]');
         historial.push({
-            fecha: new Date().toLocaleString('es-MX'),
+            fecha: mexicoDateTime(),
             estado: estado,
             descripcion: descripcion
         });
@@ -432,7 +454,7 @@ app.put('/api/envios/:guia', (req, res) => {
 
         const historial = JSON.parse(row.historial || '[]');
         historial.push({
-            fecha: new Date().toLocaleString('es-MX'),
+            fecha: mexicoDateTime(),
             estado: estado,
             descripcion: descripcion
         });
@@ -477,7 +499,7 @@ app.get('/api/pdf/:guia', (req, res) => {
         doc.fontSize(9).font('Helvetica-Bold').fillColor('#000000');
         doc.text('GUÍA:', 90, 52);
         doc.fontSize(20).font('Helvetica-Bold').fillColor('#000000');
-        doc.text(guia, 90, 62, { width: 320 });
+        doc.text(guia.replace(/^EST-/, ''), 90, 62, { width: 320 });
         
         // Unidad
         doc.rect(380, 45, 60, 45).stroke();
@@ -526,8 +548,8 @@ app.get('/api/pdf/:guia', (req, res) => {
 
         // ===== FECHA Y HORA =====
         const ahora = new Date();
-        const fecha = ahora.toLocaleDateString('es-MX');
-        const hora = ahora.toLocaleTimeString('es-MX');
+        const fecha = ahora.toLocaleDateString('es-MX', { timeZone: MEXICO_TIME_ZONE });
+        const hora = ahora.toLocaleTimeString('es-MX', { timeZone: MEXICO_TIME_ZONE });
         
         doc.rect(20, 295, 460, 30).stroke();
         doc.fontSize(9).font('Helvetica-Bold').fillColor('#000000');
